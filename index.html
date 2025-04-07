@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>매화역수</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input[type="number"], select {
+      padding: 5px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+    table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    th {
+      background: #007BFF;
+      color: white;
+    }
+    .highlight-blue {
+      background-color: lightblue !important;
+    }
+    .highlight-red {
+      background-color: lightcoral !important;
+    }
+    .highlight-purple {
+      background-color: violet !important;
+    }
+    .output {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #f5f5f5;
+      min-height: 50px;
+      white-space: pre-wrap;
+      font-size: 1.1em;
+      line-height: 1.4em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>매화역수</h1>
+  
+  <!-- 매화역수 계산 영역 -->
+  <label for="birthMonth">음력 생월 (1~12):</label>
+  <input type="number" id="birthMonth" min="1" max="12" value="2">
+  
+  <label for="birthDay">음력 생일 (1~31):</label>
+  <input type="number" id="birthDay" min="1" max="31" value="9">
+  
+  <label for="age">올해 나이:</label>
+  <input type="number" id="age" min="1" value="28">
+  
+  <button onclick="calculateSuri()">계산하기</button>
+  
+  <div id="result"></div>
+  
+  <hr>
+  
+  <!-- 선택 하이라이트 영역 -->
+  <h2>일지 선택</h2>
+  <label for="zodiacSelect">일지 선택:</label>
+  <select id="zodiacSelect">
+    <option value="인">인</option>
+    <option value="묘">묘</option>
+    <option value="진">진</option>
+    <option value="사">사</option>
+    <option value="오">오</option>
+    <option value="미">미</option>
+    <option value="신">신</option>
+    <option value="유">유</option>
+    <option value="술">술</option>
+    <option value="해">해</option>
+    <option value="자">자</option>
+    <option value="축">축</option>
+  </select>
+  <button onclick="highlightCombos()">하이라이트 적용</button>
+  
+  <div id="logOutput" class="output"></div>
+</div>
+
+<script>
+  // 전역 변수: 12지 배열
+  const monthLetters = ["인","묘","진","사","오","미","신","유","술","해","자","축"];
+  
+  // n이 10 이상이면 9를 계속 빼서 1~9 범위의 값을 반환
+  function adjust(n) {
+    while (n > 9) {
+      n -= 9;
+    }
+    return n;
+  }
+  
+  // 올해 나이 각 자리 합
+  function digitSum(num) {
+    return num.toString().split('').reduce((acc, cur) => acc + parseInt(cur), 0);
+  }
+  
+  // 매화역수 계산 함수
+  function calculateSuri() {
+    const birthMonth = parseInt(document.getElementById("birthMonth").value);
+    const birthDay = parseInt(document.getElementById("birthDay").value);
+    const age = parseInt(document.getElementById("age").value);
+    
+    const m1 = adjust(birthMonth + birthDay + 1 - 9);
+    const m2 = adjust(digitSum(age) + m1);
+    const m3 = adjust(m1 + m2);
+    const m4 = adjust(m1 + m3);
+    const m5 = adjust(m2 + m3);
+    const m6 = adjust(m4 + m5);
+    const m7 = adjust(m4 + m6);
+    const m8 = adjust(m5 + m6);
+    const m9 = adjust(m7 + m8);
+    const m10 = adjust(m1 + m4 + m7);
+    const m11 = adjust(m2 + m5 + m8);
+    const m12 = adjust(m10 + m11);
+    
+    const monthlySuri = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12];
+    const monthNames = [
+      "1월 (인)","2월 (묘)","3월 (진)",
+      "4월 (사)","5월 (오)","6월 (미)",
+      "7월 (신)","8월 (유)","9월 (술)",
+      "10월 (해)","11월 (자)","12월 (축)"
+    ];
+    
+    let resultHTML = '<h2>계산 결과 </h2>';
+    resultHTML += '<table>';
+    for (let i = 0; i < 12; i += 3) {
+      resultHTML += '<tr>';
+      for (let j = i; j < i + 3; j++) {
+        resultHTML += `<td id="monthCell-${j}"><strong>${monthNames[j]}</strong><br>${monthlySuri[j]}</td>`;
+      }
+      resultHTML += '</tr>';
+    }
+    resultHTML += '</table>';
+    document.getElementById("result").innerHTML = resultHTML;
+    document.getElementById("logOutput").innerText = "결과표가 생성되었습니다. 일지 선택을 해보세요!";
+  }
+  
+  // 글자 조합 (암합~귀문) 데이터 및 색상 구분
+  const colColor = {
+    "암합": "blue", "육합": "blue", "꼭지합": "blue", "삼합": "blue", "방합": "blue",
+    "형살": "red", "상충": "red", "귀문": "red"
+  };
+  const combosTable = {
+    "암합":  ["자사", "오해", "인해"],
+    "육합":  ["자축", "인해", "묘술", "진묘", "사신", "오미"],
+    "꼭지합": ["진사", "축인", "술해", "신미"],
+    "삼합":  ["인오술", "신자진", "해묘미", "사유축", "인오술"],
+    "방합":  ["인묘진", "사오미", "신유술", "해자축"],
+    "형살":  ["인사신", "축술미", "자묘", "진진", "오오", "유유", "해해"],
+    "상충":  ["자오", "묘유", "사해", "인신", "진술"],
+    "귀문":  ["자유", "축오", "인미", "묘신", "진해", "사술"]
+  };
+  
+  // 분해 함수: 각 콤보 문자열을 개별 글자로 분리
+  function splitCombo(str) {
+    return str.split("");
+  }
+  
+  // highlightCombos 함수: 선택한 글자가 포함된 조합에 등장하는 글자들을 하이라이트 처리
+  // (예외 조합: "진진", "오오", "유유", "해해" → 빨간색)
+  function highlightCombos() {
+    // 기존 하이라이트 제거
+    for (let i = 0; i < 12; i++) {
+      const cell = document.getElementById("monthCell-" + i);
+      if (cell) {
+        cell.classList.remove("highlight-blue", "highlight-red", "highlight-purple");
+      }
+    }
+    
+    const selected = document.getElementById("zodiacSelect").value;
+    let logMsg = `선택 글자 [${selected}] 관련 조합:\n`;
+    const exceptions = ["진진", "오오", "유유", "해해"];
+    
+    for (const colName in combosTable) {
+      const comboArr = combosTable[colName];
+      comboArr.forEach(comboStr => {
+        const letters = splitCombo(comboStr);
+        if (letters.includes(selected)) {
+          // 예외 체크
+          const baseHighlightClass = (exceptions.includes(comboStr)) 
+            ? "highlight-red"  // 예외는 항상 빨강
+            : (colColor[colName] === "blue" ? "highlight-blue" : "highlight-red");
+          
+          letters.forEach(letter => {
+            // 예외가 아닌 경우, 선택 글자는 하이라이트 제외
+            if (!exceptions.includes(comboStr) && letter === selected) return;
+            
+            const idx = monthLetters.indexOf(letter);
+            if (idx >= 0) {
+              const cell = document.getElementById(`monthCell-${idx}`);
+              if (cell) {
+                // 이미 다른 색이 있을 때, 겹치면 보라색
+                const hasBlue = cell.classList.contains("highlight-blue");
+                const hasRed = cell.classList.contains("highlight-red");
+                if ((hasBlue && baseHighlightClass === "highlight-red") ||
+                    (hasRed && baseHighlightClass === "highlight-blue")) {
+                  cell.classList.remove("highlight-blue", "highlight-red");
+                  cell.classList.add("highlight-purple");
+                } else {
+                  cell.classList.add(baseHighlightClass);
+                }
+              }
+            }
+          });
+          
+          // 로그 메시지에서 "→ highlight-blue"를 "→ 파랑", "→ highlight-red"를 "→ 빨강"으로 변경
+          let colorLabel = (baseHighlightClass === "highlight-blue") ? "파랑"
+                          : (baseHighlightClass === "highlight-red") ? "빨강"
+                          : "보라";
+          
+          const filteredLetters = letters.filter(l => (!exceptions.includes(comboStr)) ? l !== selected : true);
+          logMsg += `- [${colName}] "${comboStr}" → ${filteredLetters.join(",")} (→ ${colorLabel})\n`;
+        }
+      });
+    }
+    
+    document.getElementById("logOutput").innerText = logMsg.trim();
+  }
+</script>
+</body>
+</html>
