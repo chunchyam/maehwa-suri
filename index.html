@@ -22,6 +22,28 @@
   .help{font-size:.92rem;color:var(--muted);margin-top:8px}
   .muted{color:#666}
 
+/* === Mobile UX 개선 === */
+@media (max-width: 640px){
+  html,body{font-size:15px}
+  .grid{grid-template-columns:1fr}                /* 월별 카드 1열 */
+  .num{min-width:36px;height:36px;font-size:1rem}
+  .rowNote{font-size:.95rem}                      /* 가로 조합 박스 글자 살짝 축소 */
+  .tag{padding:2px 6px}
+
+  /* 표를 카드형으로: header 숨기고 tr을 블록 카드화 */
+  table.rtable{border:0}
+  table.rtable thead, table.rtable tr:first-child{display:none}
+  table.rtable tr{display:block;margin:12px 0;border:1px solid #eee;border-radius:12px;background:#fff}
+  table.rtable td{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:none;border-top:1px solid #f3f3f3}
+  table.rtable td:first-child{border-top:none}
+  table.rtable td::before{
+    content: attr(data-label);
+    flex:0 0 92px;
+    font-weight:700;
+    color:#555;
+  }
+}
+
   /* 월별 카드 그리드: 가로 3 × 세로 4 */
   .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .card{border:1px solid #e6e6e6;border-radius:12px;padding:12px;
