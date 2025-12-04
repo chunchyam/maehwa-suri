@@ -1,472 +1,505 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <!-- 모바일 대응 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>매화역수</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f9f9f9;
-      color: #333;
-    }
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin: 10px 0 5px;
-    }
-    input[type="number"], select {
-      padding: 5px;
-      font-size: 1em;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-right: 10px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1em;
-      background: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 10px 0;
-    }
-    table {
-      margin-top: 20px;
-      border-collapse: collapse;
-      width: 100%;
-    }
-    table, th, td {
-      border: 1px solid #ccc;
-    }
-    th, td {
-      padding: 8px;
-      text-align: center;
-      vertical-align: middle;
-    }
-    th {
-      background: #007BFF;
-      color: white;
-    }
-    .highlight-blue {
-      background-color: lightblue !important;
-    }
-    .highlight-red {
-      background-color: lightcoral !important;
-    }
-    .highlight-purple {
-      background-color: violet !important;
-    }
-    .output {
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: #f5f5f5;
-      min-height: 50px;
-      white-space: pre-wrap;
-      font-size: 1.1em;
-      line-height: 1.4em;
-    }
-    .formula {
-      font-size: 0.9em;
-      color: #666;
-      margin-bottom: 6px;
-      display: block;
-    }
-    .result-value {
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #333;
-    }
-    .fortune {
-      background: #eef;
-      padding: 6px;
-      border-radius: 4px;
-      margin-top: 4px;
-      font-size: 1em;
-      color: #005;
-      display: block;
-      text-align: center;
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>매화 수리 — 연도별(작년/올해/내년) 운세</title>
+<style>
+  :root { --fg:#111; --muted:#666; --bg:#fff; --accent:#3a6; }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);
+    font:16px/1.5 system-ui,AppleSDGothicNeo,Segoe UI,Roboto,Pretendard,sans-serif}
+  .wrap{max-width:980px;margin:32px auto;padding:0 16px}
+  h1{font-size:1.5rem;margin:0 0 8px}
+  h2{font-size:1.15rem;margin:0 0 10px}
+  .sub{color:var(--muted);margin-bottom:16px}
+  .panel{border:1px solid #ddd;border-radius:12px;padding:16px;margin:16px 0;background:#fff}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  label{white-space:nowrap}
+  input,button{font:inherit;padding:6px 10px;border:1px solid #bbb;border-radius:8px}
+  input[type="number"]{width:98px}
+  button{background:var(--accent);color:#fff;border:none;cursor:pointer}
+  .out{margin-top:10px;font-weight:700}
+  .help{font-size:.92rem;color:var(--muted);margin-top:8px}
+  .muted{color:#666}
+
+  /* 월별 카드 그리드: 가로 3 × 세로 4 */
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .card{border:1px solid #e6e6e6;border-radius:12px;padding:12px;
+    display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .card h3{margin:0 0 6px;font-size:1rem}
+  .now{box-shadow:0 0 0 2px #3a6 inset;border-color:#3a6}
+
+  /* 라벨 색 */
+  .c-normal{color:#111}
+  .c-good{color:#0b63ff}
+  .c-bad{color:#d90429}
+  .c-multi{color:#7b2cbf}
+
+  .num{min-width:40px;height:40px;border-radius:999px;border:2px solid #bbb;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.05rem}
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:700;margin-left:6px}
+  .tag.good{background:#e8f0ff;color:#0b63ff}
+  .tag.warn{background:#ffe9e9;color:#d90429}
+  .tag.multi{background:#efe6ff;color:#7b2cbf}
+
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{border:1px solid #e5e5e5;padding:8px;text-align:left;vertical-align:top}
+  th{background:#f8f8f8}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .rowNote{margin-top:6px;padding:8px;border-radius:8px;background:#fafafa;border:1px dashed #ddd}
+  .goodText{color:#0b63ff}
+  .badText{color:#d90429}
+  .neutralText{color:#444}
+
+  /* 모달 */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:1000}
+  .modal.show{display:flex}
+  .modal-card{background:#fff;border-radius:14px;max-width:760px;width:92%;max-height:85vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #eee}
+  .modal-body{padding:14px 16px}
+  .closeBtn{background:#eee;color:#333;border:none;border-radius:10px;padding:8px 10px;cursor:pointer}
+  .hl{background:#fff7cc}
+
+  /* 탭 */
+  .tabs{display:flex;gap:8px;margin:8px 0 0}
+  .tab{padding:8px 12px;border:1px solid #ddd;border-radius:999px;background:#f8f8f8;color:#333;cursor:pointer}
+  .tab.active{background:#3a6;color:#fff;border-color:#3a6}
+  .yearView{display:none}
+  .yearView.active{display:block}
+  .yearTitle{display:flex;gap:8px;align-items:baseline}
+  .ageBadge{font-size:.9rem;color:#555}
+</style>
 </head>
 <body>
-<div class="container">
-  <h1>매화역수</h1>
-  
-  <!-- 매화역수 계산 영역 -->
-  <label for="birthMonth">음력 생월 (1~12):</label>
-  <input type="number" id="birthMonth" min="1" max="12" value="2">
-  
-  <label for="birthDay">음력 생일 (1~31):</label>
-  <input type="number" id="birthDay" min="1" max="31" value="9">
-  
-  <label for="age">올해 나이:</label>
-  <input type="number" id="age" min="1" value="28">
-  
-  <button onclick="calculateSuri()">계산하기</button>
-  
-  <div id="result"></div>
-  
-  <hr>
-  
-  <!-- 선택 하이라이트 영역 -->
-  <h2>일지 선택</h2>
-  <label for="zodiacSelect">일지 선택:</label>
-  <select id="zodiacSelect">
-    <option value="인">인</option>
-    <option value="묘">묘</option>
-    <option value="진">진</option>
-    <option value="사">사</option>
-    <option value="오">오</option>
-    <option value="미">미</option>
-    <option value="신">신</option>
-    <option value="유">유</option>
-    <option value="술">술</option>
-    <option value="해">해</option>
-    <option value="자">자</option>
-    <option value="축">축</option>
-  </select>
-  <button onclick="highlightCombos()">하이라이트 적용</button>
-  
-  <div id="logOutput" class="output"></div>
-  
-  <!-- 수리별 운세 보기 버튼 -->
-  <button onclick="openFortuneWindow()">수리별 운세 보기</button>
+<div class="wrap">
+  <h1>매화 수리</h1>
+  <div class="sub">입력한 생년월일(양력)로 <b>내 일지</b>를 자동 산출하고, 오늘의 음력/양력 및 <b>음력 1~12월</b> 수리·관계를 <b>작년/올해/내년</b> 탭으로 확인합니다.</div>
+
+  <!-- 오늘 -->
+  <div class="panel">
+    오늘의 음력: <span id="lunarToday">계산중…</span><br/>
+    <span id="solarToday" class="muted"></span><br/>
+    월지: <b id="monthBranch">-</b>
+    <div class="help">연도는 음력(간지년), 아래는 양력 날짜가 표시됩니다. 월지는 음력월→지지(정월=寅) 기준.</div>
+    <div class="out" id="todayJudge" style="margin-top:6px"></div>
+  </div>
+
+  <!-- 입력 -->
+  <div class="panel">
+    <div class="row" style="gap:12px">
+      <!-- (선택창/판정 버튼 제거) -->
+      <div>내 일지: <b id="myDayBranch">-</b></div>
+
+      <div class="row" style="border-left:1px solid #eee;padding-left:12px">
+        <label>생년(양력)</label><input id="birthYear" type="number" min="1900" max="2100" placeholder="예: 1994">
+        <label>생월(양력)</label><input id="birthMonth" type="number" min="1" max="12" placeholder="1~12">
+        <label>생일(양력)</label><input id="birthDay" type="number" min="1" max="31" placeholder="1~31">
+        <button id="calcBtn">수리 계산</button>
+      </div>
+    </div>
+
+    <div id="birthEcho" class="help"></div>
+    <div class="help">※ 각 탭의 <b>기준연도 − 생년 = 나이</b>로 계산합니다(생일 지남 여부 무시).</div>
+  </div>
+
+  <!-- 탭 네비 -->
+  <div class="panel">
+    <div class="yearTitle">
+      <h2>연도별 보기</h2>
+      <span id="yearNowText" class="muted"></span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-key="prev" id="tabPrev">작년</button>
+      <button class="tab" data-key="curr" id="tabCurr">올해</button>
+      <button class="tab" data-key="next" id="tabNext">내년</button>
+    </div>
+
+    <!-- 작년 -->
+    <div id="view-prev" class="yearView active">
+      <h3><span id="titlePrev"></span> <span id="agePrev" class="ageBadge"></span></h3>
+      <div class="grid" id="gridPrev"></div>
+      <div class="help">카드를 클릭하면 해당 월의 “수리별 운세” 표가 모달로 펼쳐집니다. (현재 달 강조는 ‘올해’ 탭 기준)</div>
+      <h3>월별 수리별 운세 적용</h3>
+      <div id="suriPrev"></div>
+      <h3>가로 조합 운세</h3>
+      <div id="rowPrev"></div>
+    </div>
+
+    <!-- 올해 -->
+    <div id="view-curr" class="yearView">
+      <h3><span id="titleCurr"></span> <span id="ageCurr" class="ageBadge"></span></h3>
+      <div class="grid" id="gridCurr"></div>
+      <div class="help">카드를 클릭하면 해당 월의 “수리별 운세” 표가 모달로 펼쳐집니다. 현재 음력 달은 초록 테두리.</div>
+      <h3>월별 수리별 운세 적용</h3>
+      <div id="suriCurr"></div>
+      <h3>가로 조합 운세</h3>
+      <div id="rowCurr"></div>
+    </div>
+
+    <!-- 내년 -->
+    <div id="view-next" class="yearView">
+      <h3><span id="titleNext"></span> <span id="ageNext" class="ageBadge"></span></h3>
+      <div class="grid" id="gridNext"></div>
+      <div class="help">카드를 클릭하면 해당 월의 “수리별 운세” 표가 모달로 펼쳐집니다. (현재 달 강조는 ‘올해’ 탭 기준)</div>
+      <h3>월별 수리별 운세 적용</h3>
+      <div id="suriNext"></div>
+      <h3>가로 조합 운세</h3>
+      <div id="rowNext"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 모달 -->
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div id="modalTitle" class="mono"></div>
+      <button class="closeBtn" id="closeModal">닫기</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
 </div>
 
 <script>
-  // --------------------------
-  // 전역 변수: 12지 배열
-  // --------------------------
-  const monthLetters = ["인", "묘", "진", "사", "오", "미", "신", "유", "술", "해", "자", "축"];
-  
-  // --------------------------
-  // 보조 함수: n이 10 이상이면 9를 계속 빼서 1~9 범위로
-  // --------------------------
-  function adjust(n) {
-    while (n > 9) {
-      n -= 9;
+(function(){
+  /* ===== 기본 상수/매핑 ===== */
+  const BRANCHES = ['자','축','인','묘','진','사','오','미','신','유','술','해'];
+  const STEMS  = ['갑','을','병','정','무','기','경','신','임','계'];
+  const LUNAR_MONTH_TO_BRANCH = {1:'인',2:'묘',3:'진',4:'사',5:'오',6:'미',7:'신',8:'유',9:'술',10:'해',11:'자',12:'축'};
+
+  /* ===== 음력 변환 (NaN년 방지: 간지년 생성) ===== */
+  function lunarFromDate(date){
+    const fmt = new Intl.DateTimeFormat('ko-u-ca-chinese', {
+      timeZone:'Asia/Seoul', year:'numeric', month:'numeric', day:'numeric'
+    });
+    const parts = fmt.formatToParts(date);
+    const get = t => parts.find(p=>p.type===t)?.value ?? '';
+    const yearStr = get('relatedYear') || get('year'); // 1~60 순환수(브라우저별)
+    const cycle = parseInt(yearStr,10);
+    const lunarMonth = parseInt(get('month'),10);
+    const lunarDay   = parseInt(get('day'),10);
+    let ganzhiYear = '';
+    if (!Number.isNaN(cycle) && cycle>=1 && cycle<=60){
+      const stem = STEMS[(cycle-1)%10];
+      const br   = BRANCHES[(cycle-1)%12];
+      ganzhiYear = `${stem}${br}년`;
     }
-    return n;
+    return { cycle, lunarMonth, lunarDay, ganzhiYear };
   }
-  
-  // --------------------------
-  // digitSum 함수
-  // --------------------------
-  function digitSum(num) {
-    return num.toString().split('').reduce((acc, cur) => acc + parseInt(cur), 0);
+  function to2(n){ return String(n).padStart(2,'0'); }
+  function getKSTDate(){
+    const iso = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul'}).format(new Date());
+    return new Date(iso.replace(/-/g,'/'));
   }
-  
-  // --------------------------
-  // 운세 메시지 매핑 객체
-  // key는 오름차순 정렬된 조합 (예: "213" → "123")
-  // --------------------------
-  const fortuneMapping = {
-    "123": "이별, 퇴직, 이혼",
-    "156": "혁신, 가정 및 직장에서 큰 변화가 일어나는 시기",
-    "189": "대길, 가장 길한 시기",
-    "213": "의 경우 여자로 인해 본처와 이혼",
-    "279": "되는 일이 없음 / 진신사해 생일, 건강 조심",
-    "336": "상관, 직장 내 문제 발생, 현실 탈피 원하는 시기",
-    "369": "관재구설, 사건사고 발생, 말조심",
-    "339": "상문살, 운전, 문서 조심",
-    "459": "무난, 모든 일이 무난하게 진행되는 시기 (이별수 주의)",
-    "573": "가장 안좋은 시기, 이혼, 유산, 사고, 이별",
-    "966": "합격, 승진, 취업, 당선 등 명예 상승",
-    "999": "여행, 이사, 이민, 출장 등 분위기 전환 시기",
-    "112": "결혼·임신 운 (1수 합되면 임신)",
-    "448": "8수 합되면 들어오는 돈, 충이면 나가는 돈",
-    "134": "3수리의 경우 심리적 갈등",
-    "167": "명예 승진",
-    "348": "충되면 관재구설/낙직",
-    "253": "심리적 갈등으로 종교계통으로 전환",
-    "268": "승진운",
-    "134": "여자는 헤어짐 운, 무서운 숫자",
-    "145": "안정적인 상태, 생각하고 있는 일 추진"
+
+  /* ===== 오늘 표시 ===== */
+  let todayMonth = 0, todayMonthBranch = '-';
+  function renderToday(){
+    const today = getKSTDate();
+    const { cycle, lunarMonth, lunarDay, ganzhiYear } = lunarFromDate(today);
+    todayMonth = lunarMonth;
+    const yearLabel = ganzhiYear || `음력 주기 ${cycle}년`;
+    document.getElementById('lunarToday').textContent = `${yearLabel} ${lunarMonth}월 ${lunarDay}일 (음력)`;
+    document.getElementById('solarToday').textContent = `양력: ${today.getFullYear()}-${to2(today.getMonth()+1)}-${to2(today.getDate())}`;
+    todayMonthBranch = LUNAR_MONTH_TO_BRANCH[lunarMonth] || '-';
+    document.getElementById('monthBranch').textContent = todayMonthBranch;
+    updateTodayJudge(); // 내 일지가 있으면 오늘 판정도 갱신
+  }
+
+  /* ===== 관계 규칙 ===== */
+  const SETS_PAIR = {
+    암합:new Set(['자사','오해','인해']),
+    육합:new Set(['자축','인해','묘술','진묘','사신','오미']),
+    꼭지합:new Set(['진사','축인','술해','신미']),
+    상충:new Set(['자오','묘유','사해','인신','진술']),
+    귀문:new Set(['자유','축오','인미','묘신','진해','사술']),
+    파:new Set(['자유','축진','인해','오묘','사신','술미']),
+    해:new Set(['자미','축오','인사','묘진','신해','유술']),
+    원진:new Set(['자미','축오','인유','묘신','진해','사술']),
+    자형:new Set(['진진','오오','유유','해해'])
+  };
+  const SETS_TRIPLE = {
+    삼합:[['인','오','술'],['신','자','진'],['해','묘','미'],['사','유','축']],
+    방합:[['인','묘','진'],['사','오','미'],['신','유','술'],['해','자','축']],
+    형살:[['인','사','신'],['축','술','미']]
+  };
+  function inSameTripleSet(a,b,triples){
+    if (a===b) return false; // 동일지지 예외(자형만 별도)
+    return triples.some(set=>set.includes(a)&&set.includes(b));
+  }
+  function hasPair(set,a,b){ return set.has(a+b)||set.has(b+a); }
+  function judgeLabelAll(a,b){
+    const good=[], bad=[];
+    if (hasPair(SETS_PAIR.암합,a,b)) good.push('암합');
+    if (hasPair(SETS_PAIR.육합,a,b)) good.push('육합');
+    if (hasPair(SETS_PAIR.꼭지합,a,b)) good.push('꼭지합');
+    if (inSameTripleSet(a,b,SETS_TRIPLE.삼합)) good.push('삼합');
+    if (inSameTripleSet(a,b,SETS_TRIPLE.방합)) good.push('방합');
+
+    if (hasPair(SETS_PAIR.상충,a,b)) bad.push('충');
+    if (hasPair(SETS_PAIR.귀문,a,b)) bad.push('귀문');
+    if (hasPair(SETS_PAIR.파,a,b))   bad.push('파');
+    if (hasPair(SETS_PAIR.해,a,b))   bad.push('해');
+    if (hasPair(SETS_PAIR.원진,a,b)) bad.push('원진');
+    if (hasPair(SETS_PAIR.자형,a,b)) bad.push('자형');
+    if (inSameTripleSet(a,b,SETS_TRIPLE.형살) || ((a==='자'&&b==='묘')||(a==='묘'&&b==='자'))) bad.push('형');
+
+    const G=good.length>0,B=bad.length>0;
+    if(!G&&!B) return {label:'일반',cls:'c-normal',good:false,bad:false};
+    if(G&&B)   return {label:`중복(합+${bad.join(',')})`,cls:'c-multi',good:true,bad:true};
+    if(G)      return {label:good.join('+'),cls:'c-good',good:true,bad:false};
+    return {label:bad.join('+'),cls:'c-bad',good:false,bad:true};
+  }
+
+  /* ===== 수리별 운세 표(문구) ===== */
+  const SURI_FORTUNE={
+    1:{good:'새로운 사람과 일이 나타남, 시작함',bad:'원수, 배신자, 새로운 일 때문에 돈도 건강도 잃음'},
+    2:{good:'직장, 직업, 이사, 이민, 편입 등 변화를 주고 싶음',bad:'변화를 하면 안됨'},
+    3:{good:'불행중 다행, 조상이 도와줌. (정신적 스트레스 많은 달)',bad:'안좋은 일이 발생하며 조상이 도와주지 않음'},
+    4:{good:'일이 잘 풀리며, 안정적이고 무난하다.',bad:'가정이나 직장에서 문제, 일이 발생할 수 있음'},
+    5:{good:'좋은 일로 깜짝, 부동산 매수 시기',bad:'투자 하면 안됨, 인간관계에서 문제 발생'},
+    6:{good:'직장, 직업, 승진, 결혼, 계약 등 관적으로 좋은 일',bad:'입원, 패소, 불합격, 시비, 관재구설, 이혼 등 안좋은 일'},
+    7:{good:'덜 아픔',bad:'일이 마음대로 되지 않고, 몸과 마음이 고생'},
+    8:{good:'재물운, 부동산 매매 등 돈과 관련된 좋은 일',bad:'돈이 깨짐. 내야할 돈 미리 내 액땜'},
+    9:{good:'문서운, 여행운, 승진, 시험합격, 창업, 부동산 매매',bad:'해고, 패소, 이혼, 좌천, 퇴직 등 가정/직장 무너짐'}
   };
 
-    // 글자 조합 (암합~귀문) 데이터 및 색상 구분
-  const colColor = {
-    "암합": "blue", "육합": "blue", "꼭지합": "blue", "삼합": "blue", "방합": "blue",
-    "형살": "red", "상충": "red", "귀문": "red"
+  /* ===== 조합(등급 포함) ===== */
+  const fortuneDetail={
+    "112":{grade:"②",text:"결혼·임신 운 (1수 합되면 임신)"},
+    "123":{grade:"④",text:"이별, 퇴직, 이혼"},
+    "134":{grade:"⑤",text:"여자는 헤어짐 운, 심리적 갈등(3수리의 경우)"},
+    "145":{grade:"②",text:"안정적인 상태, 생각하고 있는 일 추진"},
+    "156":{grade:"③",text:"평 — 무난, 현상 유지 유리"},
+    "167":{grade:"②",text:"명예 승진/직업운 호전"},
+    "178":{grade:"②",text:"소길 — 점진적 호전, 귀인수"},
+    "189":{grade:"①",text:"길 — 대길, 성취/합격/계약 성사"},
+    "191":{grade:"④",text:"소흉 — 계획 지연·오해, 문서/대인 주의"},
+    "213":{grade:"④",text:"소흉 — 대인갈등/이별 이슈 경계"},
+    "224":{grade:"②",text:"소길 — 협업·파트너 운, 안정적 진행"},
+    "235":{grade:"③",text:"평 — 무난, 현상 유지 유리"},
+    "246":{grade:"②",text:"소길 — 순조로운 진행, 실무 성과"},
+    "253":{grade:"③",text:"평 — 심리적 갈등, 관조·전환에 유리"},
+    "268":{grade:"②",text:"소길 — 승진·승급 기회"},
+    "279":{grade:"④",text:"소흉 — 되는 일 드묾, 건강 유의"},
+    "336":{grade:"④",text:"소흉 — 직장·관계 마찰, 말조심"},
+    "339":{grade:"④",text:"소흉 — 상문살, 운전/문서 조심"},
+    "348":{grade:"④",text:"소흉 — 충이면 관재구설/낙직 위험"},
+    "369":{grade:"④",text:"소흉 — 관재구설/사건사고 경향"},
+    "448":{grade:"③",text:"평 — 합이면 유입, 충이면 지출(조건부)"},
+    "459":{grade:"③",text:"평 — 무난/흐름 전환, 과욕 금물"},
+    "573":{grade:"⑤",text:"흉 — 손실·관재·이별수 강함"},
+    "966":{grade:"①",text:"길 — 합격·승진·취업·명예 상승"},
+    "999":{grade:"②",text:"소길 — 여행·이사·이민·출장 등 전환운"}
   };
-  // --------------------------
-  // 미리 선언: combosTable 및 splitCombo 함수
-  // --------------------------
-  const combosTable = {
-    "암합":  ["자사", "오해", "인해"],
-    "육합":  ["자축", "인해", "묘술", "진묘", "사신", "오미"],
-    "꼭지합": ["진사", "축인", "술해", "신미"],
-    "삼합":  ["인오술", "신자진", "해묘미", "사유축", "인오술"],
-    "방합":  ["인묘진", "사오미", "신유술", "해자축"],
-    "형살":  ["인사신", "축술미", "자묘", "진진", "오오", "유유", "해해"],
-    "상충":  ["자오", "묘유", "사해", "인신", "진술"],
-    "귀문":  ["자유", "축오", "인미", "묘신", "진해", "사술"]
-  };
-  
-  function splitCombo(str) {
-    return str.split("");
+  function toneByGrade(g){ if(g==="①"||g==="②")return"goodText"; if(g==="④"||g==="⑤")return"badText"; return"neutralText"; }
+  function toneByMsg(msg){
+    const s=msg||'',good=['대길','합격','승진','취업','당선','무난','여행','이사','이민','출장','명예','성취','성사','호전','귀인'];
+    const bad=['가장 안좋','이별','퇴직','유산','사고','패소','해고','좌천','관재','구설','상문살','되는 일 없음','건강','문제','마찰'];
+    if(good.some(k=>s.includes(k)))return'goodText'; if(bad.some(k=>s.includes(k)))return'badText'; return'neutralText';
   }
-  
-  // --------------------------
-  // 매화역수 계산 함수 (일일 매화역수)
-  // --------------------------
-  function calculateSuri() {
-    const birthMonth = parseInt(document.getElementById("birthMonth").value);
-    const birthDay = parseInt(document.getElementById("birthDay").value);
-    const age = parseInt(document.getElementById("age").value);
-    
-    const m1 = adjust(birthMonth + birthDay + 1 - 9);
-    const m2 = adjust(digitSum(age) + m1);
-    const m3 = adjust(m1 + m2);
-    const m4 = adjust(m1 + m3);
-    const m5 = adjust(m2 + m3);
-    const m6 = adjust(m4 + m5);
-    const m7 = adjust(m4 + m6);
-    const m8 = adjust(m5 + m6);
-    const m9 = adjust(m7 + m8);
-    const m10 = adjust(m1 + m4 + m7);
-    const m11 = adjust(m2 + m5 + m8);
-    const m12 = adjust(m10 + m11);
-    
-    const resultValues = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12];
-    // 여기에서는 monthNames 대신 각 칸의 "수식 설명"으로 사용
-    const formulaLabels = [
-      "1월 (인)","2월 (묘)","3월 (진)",
-      "4월 (사)","5월 (오)","6월 (미)",
-      "7월 (신)","8월 (유)","9월 (술)",
-      "10월 (해)","11월 (자)","12월 (축)"
-    ];
-    
-    let html = '<h2>계산 결과 </h2>';
-    html += '<table>';
-    let rowKeys = [];
-    let idx = 0;
-    for (let i = 0; i < 4; i++) {
-      html += '<tr>';
-      let currentKey = "";
-      for (let j = 0; j < 3; j++) {
-        const label = formulaLabels[idx];
-        const value = resultValues[idx];
-        html += `<td id="cell-${idx}">
-                   <span class="formula">${label}</span>
-                   <span class="result-value">${value}</span>
-                 </td>`;
-        currentKey += String(value);
-        idx++;
+
+  /* ===== 수리 계산 ===== */
+  function adjust(n){const r=((Number(n)||0)-1)%9;return(r<0?r+9:r)+1}
+  function digitSum(n){return String(Math.abs(Number(n)||0)).split('').reduce((s,ch)=>s+Number(ch),0)}
+  function calculateSuri(birthMonth,birthDay,age){
+    const m1=adjust(birthMonth+birthDay+1-9);
+    const m2=adjust(digitSum(age)+m1);
+    const m3=adjust(m1+m2);
+    const m4=adjust(m1+m3);
+    const m5=adjust(m2+m3);
+    const m6=adjust(m4+m5);
+    const m7=adjust(m4+m6);
+    const m8=adjust(m5+m6);
+    const m9=adjust(m7+m8);
+    const m10=adjust(m1+m4+m7);
+    const m11=adjust(m2+m5+m8);
+    const m12=adjust(m10+m11);
+    return [m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12];
+  }
+
+  /* ===== 오늘 판정: 내 일지 × 오늘 월지 ===== */
+  function updateTodayJudge(){
+    const my = document.getElementById('myDayBranch').textContent.trim();
+    const box = document.getElementById('todayJudge');
+    if(!my || my==='-'){ box.textContent=''; return; }
+    const j = judgeLabelAll(my, todayMonthBranch);
+    const tagCls = j.cls==='c-good'?'good':(j.cls==='c-multi'?'multi':'warn');
+    box.innerHTML = `오늘 판정: <span class="${j.cls}">${j.label}</span> <span class="tag ${tagCls}">${my} × ${todayMonthBranch}</span>`;
+  }
+
+  /* ===== 연도별 상태/뷰 ===== */
+  const yearNow = getKSTDate().getFullYear();
+  document.getElementById('yearNowText').textContent = `기준연도: 올해 ${yearNow} (작년 ${yearNow-1} / 내년 ${yearNow+1})`;
+  const views = {
+    prev:{year:yearNow-1,grid:'gridPrev',suri:'suriPrev',row:'rowPrev',title:'titlePrev',age:'agePrev',numbers:Array(12).fill(null)},
+    curr:{year:yearNow,  grid:'gridCurr',suri:'suriCurr',row:'rowCurr',title:'titleCurr',age:'ageCurr',numbers:Array(12).fill(null)},
+    next:{year:yearNow+1,grid:'gridNext',suri:'suriNext',row:'rowNext',title:'titleNext',age:'ageNext',numbers:Array(12).fill(null)}
+  };
+
+  function renderYearView(key, dayBranch){
+    const v = views[key];
+    // 제목/나이
+    const by=parseInt(document.getElementById('birthYear').value);
+    const hasBY=(by>=1900&&by<=2100);
+    document.getElementById(v.title).textContent = `${key==='prev'?'작년':key==='curr'?'올해':'내년'} (${v.year}) — 음력 월별`;
+    document.getElementById(v.age).textContent = hasBY ? `나이 기준: ${v.year - by}세` : '';
+
+    // 카드
+    const grid=document.getElementById(v.grid); grid.innerHTML='';
+    for(let m=1;m<=12;m++){
+      const mb=LUNAR_MONTH_TO_BRANCH[m];
+      const j=dayBranch?judgeLabelAll(dayBranch,mb):{label:'—',cls:'c-normal',good:false,bad:false};
+      const card=document.createElement('div');
+      const isNow=(key==='curr'&&m===todayMonth);
+      card.className='card'+(isNow?' now':'');
+      card.dataset.month=String(m);
+      card.dataset.yearKey=key;
+      card.innerHTML=`<div><h3>${m}월 (${mb})</h3><div class="${j.cls}">${j.label}</div></div>
+                      <div class="num">${v.numbers[m-1] ?? '–'}</div>`;
+      grid.appendChild(card);
+    }
+    [...grid.querySelectorAll('.card')].forEach(el=>{
+      el.onclick=()=> openMonthModal(el.dataset.yearKey, Number(el.dataset.month), dayBranch);
+    });
+
+    // 월별 수리 적용 표
+    const wrap=document.getElementById(v.suri); wrap.innerHTML='';
+    const tbl=document.createElement('table');
+    tbl.innerHTML=`<tr><th style="width:90px">월(월지)</th><th style="width:70px">수리</th><th style="width:120px">판정</th><th>내용</th></tr>`;
+    for(let m=1;m<=12;m++){
+      const mb=LUNAR_MONTH_TO_BRANCH[m], num=v.numbers[m-1];
+      const j=dayBranch?judgeLabelAll(dayBranch,mb):{label:'—',cls:'c-normal',good:false,bad:false};
+      let msg='수리 계산 필요';
+      if(num && SURI_FORTUNE[num]){
+        const sf=SURI_FORTUNE[num];
+        if(j.good&&j.bad) msg=`${sf.good} / ${sf.bad}`;
+        else if(j.good)   msg=sf.good;
+        else if(j.bad)    msg=sf.bad;
+        else              msg='무난';
       }
-      rowKeys.push(currentKey);
-      html += '</tr>';
-      html += `<tr><td colspan="3" id="fortune-row-${i}"></td></tr>`;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${m}월 (${mb})</td><td class="mono">${num ?? '–'}</td><td class="${j.cls}">${j.label}</td><td>${msg}</td>`;
+      tbl.appendChild(tr);
     }
-    html += '</table>';
-    
-    document.getElementById("result").innerHTML = html;
-    document.getElementById("logOutput").innerText = "결과표가 생성되었습니다. 일지 선택을 해보세요!";
-    
-    // 각 행의 조합 키를 오름차순 정렬하여 운세 메시지 표시
-    for (let i = 0; i < rowKeys.length; i++) {
-      let sortedKey = rowKeys[i].split("").sort().join("");
-      const message = fortuneMapping[sortedKey] || "해당 운세 해석이 없습니다.";
-      document.getElementById("fortune-row-" + i).innerHTML =
-        `<span class="fortune">[${sortedKey}] → ${message}</span>`;
-    }
+    wrap.appendChild(tbl);
+
+    // 가로 조합 운세
+    const box=document.getElementById(v.row); box.innerHTML='';
+    [[1,2,3],[4,5,6],[7,8,9],[10,11,12]].forEach(idxs=>{
+      const nums=idxs.map(k=>v.numbers[k-1]).filter(Boolean);
+      const code=nums.length===3?String(nums.slice().sort((a,b)=>a-b).join('')):null;
+      let msg='해당 조합 해석 없음 (또는 수리 계산 필요)', grade='';
+      if(code && fortuneDetail[code]){ msg=fortuneDetail[code].text; grade=fortuneDetail[code].grade||''; }
+      const cls=grade?toneByGrade(grade):toneByMsg(msg);
+      const badgeCls=(cls==='goodText'?'tag good':(cls==='badText'?'tag warn':'tag'));
+      const div=document.createElement('div');
+      div.className='rowNote';
+      div.innerHTML=`<b>${idxs[0]}–${idxs[2]}월</b> 수리 → <span class="mono">${nums.join(', ')||'–'}</span>
+                     &nbsp;|&nbsp; 코드 <span class="mono">${code??'—'}</span>
+                     ${grade?`&nbsp;<span class="${badgeCls}">${grade}</span>`:''}
+                     <br><span class="${cls}">${msg}</span>`;
+      box.appendChild(div);
+    });
   }
-  
-  // --------------------------
-  // 기존 하이라이트 적용 함수
-  // --------------------------
-  function highlightCombos() {
-    if (!document.getElementById("cell-0")) {
-      alert("먼저 '계산하기' 버튼을 눌러 결과표를 생성해 주세요.");
+
+  /* ===== 모달 ===== */
+  const modal=document.getElementById('modal');
+  const modalTitle=document.getElementById('modalTitle');
+  const modalBody=document.getElementById('modalBody');
+  document.getElementById('closeModal').onclick=()=>modal.classList.remove('show');
+  modal.onclick=e=>{ if(e.target===modal) modal.classList.remove('show'); };
+
+  function buildSuriTable(highlightNum,isGood,isBad){
+    const tbl=document.createElement('table');
+    const head=`<tr><th>수리</th><th>구분</th><th>내용</th></tr>`;
+    const rows=[];
+    for(let s=1;s<=9;s++){
+      const sf=SURI_FORTUNE[s];
+      rows.push(`
+        <tr class="${s===highlightNum && isGood ? 'hl':''}">
+          <td rowspan="2">${s}수리</td><td>합(삼합,육합)</td><td>${sf.good}</td>
+        </tr>
+        <tr class="${s===highlightNum && isBad ? 'hl':''}">
+          <td>형충파해원진</td><td>${sf.bad}</td>
+        </tr>`);
+    }
+    tbl.innerHTML=head+rows.join('');
+    return tbl;
+  }
+  function openMonthModal(yearKey,monthIdx,dayBranch){
+    const mb=LUNAR_MONTH_TO_BRANCH[monthIdx];
+    const num=views[yearKey].numbers[monthIdx-1];
+    const j=dayBranch?judgeLabelAll(dayBranch,mb):{label:'—',cls:'c-normal',good:false,bad:false};
+    modalTitle.textContent=`${views[yearKey].year}년 ${monthIdx}월 (${mb}) — 수리 ${num ?? '–'} / 판정: ${j.label}`;
+    modalBody.innerHTML=''; modalBody.appendChild(buildSuriTable(num,j.good,j.bad));
+    modal.classList.add('show');
+  }
+
+  /* ===== 일지(지지) 계산 유틸 ===== */
+  function g2jdn(y,m,d){const a=Math.floor((14-m)/12),yy=y+4800-a,mm=m+12*a-3;
+    return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045;}
+  function ganzhiOfDate_KST(y,m,d){const jdn=g2jdn(y,m,d);return{branchIdx:(jdn+1)%12}}
+  function getDayBranchFromSolar(y,m,d){return BRANCHES[ganzhiOfDate_KST(y,m,d).branchIdx];}
+
+  /* ===== 입력에 따라 내 일지 자동 표시 & 전 탭 재렌더 ===== */
+  function updateMyDayBranchAndRerender(){
+    const y=parseInt(document.getElementById('birthYear').value);
+    const m=parseInt(document.getElementById('birthMonth').value);
+    const d=parseInt(document.getElementById('birthDay').value);
+    if(!(y>=1900&&y<=2100) || !(m>=1&&m<=12) || !(d>=1&&d<=31)){
+      document.getElementById('myDayBranch').textContent='-';
+      updateTodayJudge();
+      for(const k of Object.keys(views)) renderYearView(k,'');
       return;
     }
-    
-    for (let i = 0; i < 12; i++) {
-      const cell = document.getElementById("cell-" + i);
-      if (cell) {
-        cell.classList.remove("highlight-blue", "highlight-red", "highlight-purple");
-      }
-    }
-    
-    const selected = document.getElementById("zodiacSelect").value;
-    let logMsg = `선택 글자 [${selected}] 관련 조합:\n`;
-    const exceptions = ["진진", "오오", "유유", "해해"];
-    
-    for (const colName in combosTable) {
-      const comboArr = combosTable[colName];
-      comboArr.forEach(comboStr => {
-        const letters = splitCombo(comboStr);
-        if (letters.includes(selected)) {
-          const baseHighlightClass = (exceptions.includes(comboStr))
-            ? "highlight-red"
-            : (colColor[colName] === "blue" ? "highlight-blue" : "highlight-red");
-          
-          letters.forEach(letter => {
-            if (!exceptions.includes(comboStr) && letter === selected) return;
-            const idx = monthLetters.indexOf(letter);
-            if (idx >= 0) {
-              const cell = document.getElementById("cell-" + idx);
-              if (cell) {
-                const hasBlue = cell.classList.contains("highlight-blue");
-                const hasRed = cell.classList.contains("highlight-red");
-                if ((hasBlue && baseHighlightClass === "highlight-red") ||
-                    (hasRed && baseHighlightClass === "highlight-blue")) {
-                  cell.classList.remove("highlight-blue", "highlight-red");
-                  cell.classList.add("highlight-purple");
-                } else {
-                  cell.classList.add(baseHighlightClass);
-                }
-              }
-            }
-          });
-          
-          let colorLabel = (baseHighlightClass === "highlight-blue") ? "파랑"
-                         : (baseHighlightClass === "highlight-red") ? "빨강"
-                         : "보라";
-          
-          const filteredLetters = letters.filter(l => (!exceptions.includes(comboStr)) ? l !== selected : true);
-          logMsg += `- [${colName}] "${comboStr}" → ${filteredLetters.join(",")} (→ ${colorLabel})\n`;
-        }
-      });
-    }
-    
-    document.getElementById("logOutput").innerText = logMsg.trim();
+    const my=getDayBranchFromSolar(y,m,d);
+    document.getElementById('myDayBranch').textContent=my;
+    updateTodayJudge();
+    for(const k of Object.keys(views)) renderYearView(k,my);
   }
-  
-  // --------------------------
-  // "수리별 운세 보기" 버튼 (새 창)
-  // --------------------------
-  function openFortuneWindow() {
-    const fortuneHTML = `
-      <!DOCTYPE html>
-      <html lang="ko">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>수리별 운세</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; color: #333; }
-          h1 { text-align: center; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ccc; padding: 8px; text-align: center; vertical-align: middle; }
-          th { background: #007BFF; color: #fff; }
-        </style>
-      </head>
-      <body>
-        <h1>수리별 운세</h1>
-        <table>
-          <tr>
-            <th>수리</th>
-            <th>구분</th>
-            <th>내용</th>
-          </tr>
-          <tr>
-            <td rowspan="2">1수리</td>
-            <td>합(삼합,육합)</td>
-            <td>새로운 사람과 일이 나타남, 시작함</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>원수, 배신자, 새로운일 때문에 돈도 건강도 잃음</td>
-          </tr>
-          <tr>
-            <td rowspan="2">2수리</td>
-            <td>합</td>
-            <td>직장, 직업, 이사, 이민, 편입 등 변화를 주고 싶음</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>변화를 하면 안됨</td>
-          </tr>
-          <tr>
-            <td rowspan="2">3수리</td>
-            <td>합</td>
-            <td>불행중 다행, 조상이 도와줌. - 정신적 스트레스 많은 달</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>안좋은 일이 발생하며 조상이 도와주지 않음</td>
-          </tr>
-          <tr>
-            <td rowspan="2">4수리</td>
-            <td>합</td>
-            <td>일이 잘 풀리며, 안정적이고 무난하다.</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>가정이나 직장에서 문제, 일이 발생할 수 있음</td>
-          </tr>
-          <tr>
-            <td rowspan="2">5수리</td>
-            <td>합</td>
-            <td>좋은 일로 깜짝, 부동산 매수 시기</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>투자 하면 안됨, 인간관계에서 문제 발생</td>
-          </tr>
-          <tr>
-            <td rowspan="2">6수리</td>
-            <td>합</td>
-            <td>직장, 직업, 승진, 결혼, 계약 등 관적으로 좋은 일</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>입원, 패소, 불합격, 시비, 관재구설, 이혼 등 안좋은 일</td>
-          </tr>
-          <tr>
-            <td rowspan="2">7수리</td>
-            <td>합</td>
-            <td>덜 아픔</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>일이 마음대로 되지 않고, 몸과 마음이 고생</td>
-          </tr>
-          <tr>
-            <td rowspan="2">8수리</td>
-            <td>합</td>
-            <td>재물운, 부동산 매매 등 돈과 관련된 좋은 일</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>돈이 깨짐. 내야할 돈 미리 내 액땜</td>
-          </tr>
-          <tr>
-            <td rowspan="2">9수리</td>
-            <td>합</td>
-            <td>문서운, 여행운, 승진, 시험합격, 창업, 부동산 매매</td>
-          </tr>
-          <tr>
-            <td>형충파해원진</td>
-            <td>해고, 패소, 이혼, 좌천, 퇴직 등 가정/직장 무너짐</td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `;
-    
-    const newWindow = window.open("", "_blank");
-    newWindow.document.open();
-    newWindow.document.write(fortuneHTML);
-    newWindow.document.close();
+  ['birthYear','birthMonth','birthDay'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.addEventListener('input',updateMyDayBranchAndRerender);
+    el.addEventListener('change',updateMyDayBranchAndRerender);
+  });
+
+  /* ===== 수리 계산(3개 연도 모두) ===== */
+  function getKSTDateFromYMD(y,m,d){ return new Date(`${y}/${to2(m)}/${to2(d)} 12:00:00`); }
+  function recomputeAll(){
+    const y=parseInt(document.getElementById('birthYear').value);
+    const m=parseInt(document.getElementById('birthMonth').value);
+    const d=parseInt(document.getElementById('birthDay').value);
+    if(!(y>=1900&&y<=2100) || !(m>=1&&m<=12) || !(d>=1&&d<=31)){
+      alert('생년/생월/생일(양력)을 올바르게 입력해주세요.'); return;
+    }
+    const { lunarYear, lunarMonth, lunarDay } = lunarFromDate(getKSTDateFromYMD(y,m,d));
+    document.getElementById('birthEcho').textContent =
+      `입력 생일(양력) ${y}-${to2(m)}-${to2(d)} → 음력 ${lunarMonth}월 ${lunarDay}일 (간지년 자동 표기)`;
+    for(const key of Object.keys(views)){
+      const age = views[key].year - y;
+      views[key].numbers = calculateSuri(lunarMonth, lunarDay, age);
+      // 내 일지 기준 라벨은 updateMyDayBranchAndRerender에서 처리
+    }
+    updateMyDayBranchAndRerender();
   }
+  document.getElementById('calcBtn').addEventListener('click',recomputeAll);
+
+  /* ===== 탭 ===== */
+  function activateTab(key){
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
+    document.querySelectorAll('.yearView').forEach(v=>v.classList.toggle('active',v.id===`view-${key}`));
+  }
+  document.getElementById('tabPrev').onclick=()=>activateTab('prev');
+  document.getElementById('tabCurr').onclick=()=>activateTab('curr');
+  document.getElementById('tabNext').onclick=()=>activateTab('next');
+
+  /* 초기 */
+  window.addEventListener('load', ()=>{
+    renderToday();
+    for(const k of Object.keys(views)) renderYearView(k,''); // 수리 미계산 상태 기본 골격
+  });
+})();
 </script>
 </body>
 </html>
