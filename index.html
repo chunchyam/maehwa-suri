@@ -22,28 +22,6 @@
   .help{font-size:.92rem;color:var(--muted);margin-top:8px}
   .muted{color:#666}
 
-/* === Mobile UX 개선 === */
-@media (max-width: 640px){
-  html,body{font-size:15px}
-  .grid{grid-template-columns:1fr}                /* 월별 카드 1열 */
-  .num{min-width:36px;height:36px;font-size:1rem}
-  .rowNote{font-size:.95rem}                      /* 가로 조합 박스 글자 살짝 축소 */
-  .tag{padding:2px 6px}
-
-  /* 표를 카드형으로: header 숨기고 tr을 블록 카드화 */
-  table.rtable{border:0}
-  table.rtable thead, table.rtable tr:first-child{display:none}
-  table.rtable tr{display:block;margin:12px 0;border:1px solid #eee;border-radius:12px;background:#fff}
-  table.rtable td{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:none;border-top:1px solid #f3f3f3}
-  table.rtable td:first-child{border-top:none}
-  table.rtable td::before{
-    content: attr(data-label);
-    flex:0 0 92px;
-    font-weight:700;
-    color:#555;
-  }
-}
-
   /* 월별 카드 그리드: 가로 3 × 세로 4 */
   .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .card{border:1px solid #e6e6e6;border-radius:12px;padding:12px;
@@ -90,12 +68,37 @@
   .yearView.active{display:block}
   .yearTitle{display:flex;gap:8px;align-items:baseline}
   .ageBadge{font-size:.9rem;color:#555}
+
+  /* === Mobile UX 개선 === */
+  @media (max-width: 640px){
+    html,body{font-size:15px}
+    .grid{grid-template-columns:1fr}                /* 월별 카드 1열 */
+    .num{min-width:36px;height:36px;font-size:1rem}
+    .rowNote{font-size:.95rem}
+    .tag{padding:2px 6px}
+
+    /* 표를 카드형으로: header 숨기고 tr을 블록 카드화 */
+    table.rtable{border:0}
+    table.rtable thead, table.rtable tr:first-child{display:none}
+    table.rtable tr{display:block;margin:12px 0;border:1px solid #eee;border-radius:12px;background:#fff}
+    table.rtable td{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:none;border-top:1px solid #f3f3f3}
+    table.rtable td:first-child{border-top:none}
+    table.rtable td::before{
+      content: attr(data-label);
+      flex:0 0 92px;
+      font-weight:700;
+      color:#555;
+    }
+  }
+  /* (선택) 줄바꿈 가독성 */
+  td{word-break:keep-all}
+  @media (max-width:640px){ td{word-break:break-word} }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>매화 수리</h1>
-
+  <div class="sub">입력한 생년월일(양력)로 <b>내 일지</b>를 자동 산출하고, 오늘의 음력/양력 및 <b>음력 1~12월</b> 수리·관계를 <b>작년/올해/내년</b> 탭으로 확인합니다.</div>
 
   <!-- 오늘 -->
   <div class="panel">
@@ -109,9 +112,7 @@
   <!-- 입력 -->
   <div class="panel">
     <div class="row" style="gap:12px">
-      <!-- (선택창/판정 버튼 제거) -->
       <div>내 일지: <b id="myDayBranch">-</b></div>
-
       <div class="row" style="border-left:1px solid #eee;padding-left:12px">
         <label>생년(양력)</label><input id="birthYear" type="number" min="1900" max="2100" placeholder="예: 1994">
         <label>생월(양력)</label><input id="birthMonth" type="number" min="1" max="12" placeholder="1~12">
@@ -119,7 +120,6 @@
         <button id="calcBtn">수리 계산</button>
       </div>
     </div>
-
     <div id="birthEcho" class="help"></div>
     <div class="help">※ 각 탭의 <b>기준연도 − 생년 = 나이</b>로 계산합니다.</div>
   </div>
@@ -143,7 +143,7 @@
       <div class="help">카드를 클릭하면 해당 월의 “수리별 운세” 표가 펼쳐집니다. (현재 달 강조는 ‘올해’ 탭 기준)</div>
       <h3>월별 수리별 운세 적용</h3>
       <div id="suriPrev"></div>
-      <h3>가로 조합 운세</h3>
+      <h3>가로 조합 운세 (3개월 세트)</h3>
       <div id="rowPrev"></div>
     </div>
 
@@ -154,7 +154,7 @@
       <div class="help">카드를 클릭하면 해당 월의 “수리별 운세” 표가 펼쳐집니다. 현재 음력 달은 초록 테두리.</div>
       <h3>월별 수리별 운세 적용</h3>
       <div id="suriCurr"></div>
-      <h3>가로 조합 운세</h3>
+      <h3>가로 조합 운세 (3개월 세트)</h3>
       <div id="rowCurr"></div>
     </div>
 
@@ -165,7 +165,7 @@
       <div class="help">카드를 클릭하면 해당 월의 “수리별 운세” 표가 펼쳐집니다. (현재 달 강조는 ‘올해’ 탭 기준)</div>
       <h3>월별 수리별 운세 적용</h3>
       <div id="suriNext"></div>
-      <h3>가로 조합 운세</h3>
+      <h3>가로 조합 운세 (3개월 세트)</h3>
       <div id="rowNext"></div>
     </div>
   </div>
@@ -189,14 +189,14 @@
   const STEMS  = ['갑','을','병','정','무','기','경','신','임','계'];
   const LUNAR_MONTH_TO_BRANCH = {1:'인',2:'묘',3:'진',4:'사',5:'오',6:'미',7:'신',8:'유',9:'술',10:'해',11:'자',12:'축'};
 
-  /* ===== 음력 변환 (NaN년 방지: 간지년 생성) ===== */
+  /* ===== 음력 변환 ===== */
   function lunarFromDate(date){
     const fmt = new Intl.DateTimeFormat('ko-u-ca-chinese', {
       timeZone:'Asia/Seoul', year:'numeric', month:'numeric', day:'numeric'
     });
     const parts = fmt.formatToParts(date);
     const get = t => parts.find(p=>p.type===t)?.value ?? '';
-    const yearStr = get('relatedYear') || get('year'); // 1~60 순환수(브라우저별)
+    const yearStr = get('relatedYear') || get('year'); 
     const cycle = parseInt(yearStr,10);
     const lunarMonth = parseInt(get('month'),10);
     const lunarDay   = parseInt(get('day'),10);
@@ -225,7 +225,7 @@
     document.getElementById('solarToday').textContent = `양력: ${today.getFullYear()}-${to2(today.getMonth()+1)}-${to2(today.getDate())}`;
     todayMonthBranch = LUNAR_MONTH_TO_BRANCH[lunarMonth] || '-';
     document.getElementById('monthBranch').textContent = todayMonthBranch;
-    updateTodayJudge(); // 내 일지가 있으면 오늘 판정도 갱신
+    updateTodayJudge(); // 
   }
 
   /* ===== 관계 규칙 ===== */
@@ -385,9 +385,10 @@
       el.onclick=()=> openMonthModal(el.dataset.yearKey, Number(el.dataset.month), dayBranch);
     });
 
-    // 월별 수리 적용 표
+    // 월별 수리 적용 표 (모바일 카드형: rtable 클래스)
     const wrap=document.getElementById(v.suri); wrap.innerHTML='';
     const tbl=document.createElement('table');
+    tbl.className='rtable';
     tbl.innerHTML=`<tr><th style="width:90px">월(월지)</th><th style="width:70px">수리</th><th style="width:120px">판정</th><th>내용</th></tr>`;
     for(let m=1;m<=12;m++){
       const mb=LUNAR_MONTH_TO_BRANCH[m], num=v.numbers[m-1];
@@ -401,7 +402,11 @@
         else              msg='무난';
       }
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${m}월 (${mb})</td><td class="mono">${num ?? '–'}</td><td class="${j.cls}">${j.label}</td><td>${msg}</td>`;
+      tr.innerHTML=`
+        <td data-label="월(월지)">${m}월 (${mb})</td>
+        <td data-label="수리" class="mono">${num ?? '–'}</td>
+        <td data-label="판정" class="${j.cls}">${j.label}</td>
+        <td data-label="내용">${msg}</td>`;
       tbl.appendChild(tr);
     }
     wrap.appendChild(tbl);
@@ -434,16 +439,20 @@
 
   function buildSuriTable(highlightNum,isGood,isBad){
     const tbl=document.createElement('table');
+    tbl.className='rtable';  // 모바일 카드형
     const head=`<tr><th>수리</th><th>구분</th><th>내용</th></tr>`;
     const rows=[];
     for(let s=1;s<=9;s++){
       const sf=SURI_FORTUNE[s];
       rows.push(`
         <tr class="${s===highlightNum && isGood ? 'hl':''}">
-          <td rowspan="2">${s}수리</td><td>합(삼합,육합)</td><td>${sf.good}</td>
+          <td data-label="수리" rowspan="2">${s}수리</td>
+          <td data-label="구분">합(삼합,육합)</td>
+          <td data-label="내용">${sf.good}</td>
         </tr>
         <tr class="${s===highlightNum && isBad ? 'hl':''}">
-          <td>형충파해원진</td><td>${sf.bad}</td>
+          <td data-label="구분">형충파해원진</td>
+          <td data-label="내용">${sf.bad}</td>
         </tr>`);
     }
     tbl.innerHTML=head+rows.join('');
@@ -495,13 +504,12 @@
     if(!(y>=1900&&y<=2100) || !(m>=1&&m<=12) || !(d>=1&&d<=31)){
       alert('생년/생월/생일(양력)을 올바르게 입력해주세요.'); return;
     }
-    const { lunarYear, lunarMonth, lunarDay } = lunarFromDate(getKSTDateFromYMD(y,m,d));
+    const { lunarMonth, lunarDay } = lunarFromDate(getKSTDateFromYMD(y,m,d));
     document.getElementById('birthEcho').textContent =
       `입력 생일(양력) ${y}-${to2(m)}-${to2(d)} → 음력 ${lunarMonth}월 ${lunarDay}일 (간지년 자동 표기)`;
     for(const key of Object.keys(views)){
       const age = views[key].year - y;
       views[key].numbers = calculateSuri(lunarMonth, lunarDay, age);
-      // 내 일지 기준 라벨은 updateMyDayBranchAndRerender에서 처리
     }
     updateMyDayBranchAndRerender();
   }
@@ -519,7 +527,7 @@
   /* 초기 */
   window.addEventListener('load', ()=>{
     renderToday();
-    for(const k of Object.keys(views)) renderYearView(k,''); // 수리 미계산 상태 기본 골격
+    for(const k of Object.keys(views)) renderYearView(k,''); //
   });
 })();
 </script>
